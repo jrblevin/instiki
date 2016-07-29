@@ -91,4 +91,20 @@ module WikiHelper
         {:class => 'navlink', :id => 'rollback', :rel => 'nofollow'})
   end
 
+  def recaptcha_tags
+    if RECAPTCHA_PUBLIC_KEY and RECAPTCHA_PRIVATE_KEY
+      "<div id='recaptcha' class='g-recaptcha'></div>
+<script type='text/javascript'>
+//<![CDATA[
+var recaptchaOnLoadCallback = function() {
+ grecaptcha.render('recaptcha', {
+ 'sitekey' : '#{RECAPTCHA_PUBLIC_KEY}'
+ });
+}
+//]]>
+</script>
+<script src='https://www.google.com/recaptcha/api.js?onload=recaptchaOnLoadCallback&amp;render=explicit&amp;hl=en' type='text/javascript' async='async' defer='defer'></script>"
+    end
+  end
+
 end

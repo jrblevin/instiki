@@ -51,6 +51,10 @@ Rails::Initializer.run do |config|
   # (enables use of different database adapters for development and test environments)
   config.active_record.schema_format = :sql
 
+  # ReCAPTCHA
+  RECAPTCHA_PUBLIC_KEY  = ENV['RECAPTCHA_PUBLIC_KEY']
+  RECAPTCHA_PRIVATE_KEY = ENV['RECAPTCHA_PRIVATE_KEY']
+
   File.umask(0026)
 end
 

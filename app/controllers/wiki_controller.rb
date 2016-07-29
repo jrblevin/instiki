@@ -4,6 +4,7 @@ require 'maruku/ext/math'
 require 'zip/zip'
 require 'instiki_stringsupport'
 require 'resolv'
+require 'json' # ReCAPTCHA
 
 class WikiController < ApplicationController
 
@@ -334,6 +335,7 @@ EOL
     author_name = 'AnonymousCoward' if author_name =~ /^\s*$/
     
     begin
+      raise Instiki::ValidationError.new('The CAPTCHA must be solved to edit this page.') unless verify_recaptcha
       the_content = params['content'].purify
       prev_content = ''
       filter_spam(the_content)
@@ -610,6 +612,28 @@ EOL
       spam_patterns_file.readlines.inject([]) { |patterns, line| patterns << Regexp.new(line.chomp, Regexp::IGNORECASE) } 
     else
       []
+    end
+  end
+
+  def verify_recaptcha
+    response = params['g-recaptcha-response'].to_s
+    if RECAPTCHA_PUBLIC_KEY.nil? and RECAPTCHA_PRIVATE_KEY.nil?
+      true
+    elsif not response.empty?
+      verify_hash = {
+        "secret"    => RECAPTCHA_PRIVATE_KEY,
+        "remoteip"  => request.remote_ip.to_s,
+        "response"  => response
+      }
+      verify_url = "https://www.google.com/recaptcha/api/siteverify"
+      query = URI.encode_www_form(verify_hash)
+      uri = URI.parse(verify_url + '?' + query)
+      http_instance = Net::HTTP.new(uri.host, uri.port)
+      http_instance.read_timeout = http_instance.open_timeout = 5
+      http_instance.use_ssl = true if uri.port == 443
+      request = Net::HTTP::Get.new(uri.request_uri)
+      reply = JSON.parse(http_instance.request(request).body)
+      reply['success'].to_s == "true"
     end
   end
 

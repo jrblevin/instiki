@@ -15,6 +15,7 @@
 	   <div>	
 		<textarea name="content" id="content" rows="24" cols="60"><%= h(flash[:content] || 
                          (params['content'] ?  params['content'] : @page.content).purify) %></textarea>
+           <%= raw recaptcha_tags %>
 <% if @page_name != 'HomePage' -%>
 	   <p>
 	      <%= check_box_tag :alter_title, value = "1", checked=false,
